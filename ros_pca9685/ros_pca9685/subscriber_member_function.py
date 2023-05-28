@@ -1,29 +1,42 @@
 #!/usr/bin/python3
 
+import time
+
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
 
-import board
-import busio
-# from adafruit_motor import servo
-from adafruit_pca9685 import PCA9685
-
+from adafruit_servokit import ServoKit
 
 class RosPca9685Subscriber(Node):
 
     def __init__(self):
         super().__init__('ros_pca9685_subscriber')
 
-        self.i2c = i2c = busio.I2C(board.SCL, board.SDA)
-        self.pca = PCA9685(self.i2c)
-        self.pca.frequency = 50
+        self.kit = ServoKit(channels=16)
+        self.kit.continuous_servo[0].set_pulse_width_range(500, 2500)  #from https://www.agfrc.com/index.php?id=2535    
+
+        
 
         self.subscription = self.create_subscription(Twist,'/cmd_vel',self.subscription_callback,10)
         self.subscription  # prevent unused variable warning
 
+
     def subscription_callback(self, msg):
-        self.get_logger().info('I heard: "%s"' % msg.data)
+        self.kit.servo[0].angle = 180
+        self.get_logger().info('I Hight:')
+        time.sleep(5)
+
+        self.kit.servo[0].angle = 0
+        self.get_logger().info('I low:')
+        time.sleep(5)
+
+        # self.kit.continuous_servo[0].throttle = 1
+        # time.sleep(1)
+        # self.kit.continuous_servo[0].throttle = -1
+        # time.sleep(1)
+        # self.kit.continuous_servo[0].throttle = 0
+
 
 
 
