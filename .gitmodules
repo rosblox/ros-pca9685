@@ -1,0 +1,3 @@
+[submodule "pca9685-python"]
+	path = pca9685-python
+	url = https://github.com/rosblox/pca9685-python
