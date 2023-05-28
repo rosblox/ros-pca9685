@@ -4,7 +4,7 @@ import time
 
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Twist
+from std_msgs.msg import Float32MultiArray
 
 from adafruit_servokit import ServoKit
 
@@ -13,31 +13,18 @@ class RosPca9685Subscriber(Node):
     def __init__(self):
         super().__init__('ros_pca9685_subscriber')
 
-        self.kit = ServoKit(channels=16)
-        self.kit.continuous_servo[0].set_pulse_width_range(500, 2500)  #from https://www.agfrc.com/index.php?id=2535    
+        channels = 16
+        self.kit = ServoKit(channels=channels)
+        for idx in range(0,channels-1):
+            self.kit.continuous_servo[idx].set_pulse_width_range(500, 2500)  #from https://www.agfrc.com/index.php?id=2535    
 
-        
-
-        self.subscription = self.create_subscription(Twist,'/cmd_vel',self.subscription_callback,10)
+        self.subscription = self.create_subscription(Float32MultiArray,'pca9685/cmd',self.subscription_callback,10)
         self.subscription  # prevent unused variable warning
 
 
     def subscription_callback(self, msg):
-        self.kit.servo[0].angle = 180
-        self.get_logger().info('I Hight:')
-        time.sleep(5)
-
-        self.kit.servo[0].angle = 0
-        self.get_logger().info('I low:')
-        time.sleep(5)
-
-        # self.kit.continuous_servo[0].throttle = 1
-        # time.sleep(1)
-        # self.kit.continuous_servo[0].throttle = -1
-        # time.sleep(1)
-        # self.kit.continuous_servo[0].throttle = 0
-
-
+        for idx, value in enumerate(msg.data):
+            self.kit.continuous_servo[idx].throttle = value
 
 
 def main(args=None):
