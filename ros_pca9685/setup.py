@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-                'ros_pca9685_node = ros_pca9685.subscriber_member_function:main',
+                'ros_pca9685_subscriber = ros_pca9685.subscriber_member_function:main',
         ],
     },
 )

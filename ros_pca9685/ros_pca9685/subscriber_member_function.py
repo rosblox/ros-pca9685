@@ -14,49 +14,40 @@
 
 import rclpy
 from rclpy.node import Node
-from sensor_msgs.msg import BatteryState
+from geometry_msgs.msg import Twist
+
+#  Import the PCA9685 module.
+# from pca9685_driver import PCA9685
 
 
-import smbus
-from pca9685 import INA220
-
-
-class RosPca9685Publisher(Node):
+class RosPca9685Subscriber(Node):
 
     def __init__(self):
-        super().__init__('ros_pca9685_publisher')
+        super().__init__('ros_pca9685_subscriber')
 
-        bus = smbus.SMBus(1)
-        self.pca9685 = INA220(i2c_addr=0x41, i2c_dev=bus)
+        # Initialize the PCA9685 board
+        # self.pca9685 = PCA9685(0x40)
 
-        self.publisher_ = self.create_publisher(BatteryState, 'pca9685/data', 10)
-        timer_period = 0.01  # seconds
-        self.timer = self.create_timer(timer_period, self.timer_callback)
 
-    def timer_callback(self):
-        current_draw, bus_voltage, shunt_voltage = self.pca9685.get_measurements()
+        self.subscription = self.create_subscription(Twist,'/cmd_vel',self.subscription_callback,10)
+        self.subscription  # prevent unused variable warning
 
-        msg = BatteryState()
-        msg.header.stamp = self.get_clock().now().to_msg()
-        msg.header.frame_id = "ros_pca9685"
+    def subscription_callback(self, msg):
+        self.get_logger().info('I heard: "%s"' % msg.data)
 
-        msg.current = current_draw
-        msg.voltage = bus_voltage
-
-        self.publisher_.publish(msg)
 
 
 def main(args=None):
     rclpy.init(args=args)
 
-    ros_pca9685_publisher = RosPca9685Publisher()
+    ros_pca9685_subscriber = RosPca9685Subscriber()
 
-    rclpy.spin(ros_pca9685_publisher)
+    rclpy.spin(ros_pca9685_subscriber)
 
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)
-    ros_pca9685_publisher.destroy_node()
+    ros_pca9685_subscriber.destroy_node()
     rclpy.shutdown()
 
 
